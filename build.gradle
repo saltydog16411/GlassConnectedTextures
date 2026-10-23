@@ -1,3 +1,4 @@
+// Glass Connected Textures build configuration.
 import groovy.json.JsonOutput
 import java.awt.Color
 import java.awt.image.BufferedImage
