@@ -5,11 +5,11 @@ on:
     branches:
       - main
     paths:
-      - .github/workflows/release-v1.0.0.yml
-      - build.gradle
-      - settings.gradle
-      - gradle.properties
-      - src/**
+      - ".github/workflows/release-v1.0.0.yml"
+      - "build.gradle"
+      - "settings.gradle"
+      - "gradle.properties"
+      - "src/**"
   workflow_dispatch:
 
 permissions:
@@ -29,12 +29,12 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: "17"
 
       - name: Set up Gradle 8.8
         uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: '8.8'
+          gradle-version: "8.8"
 
       - name: Build
         run: gradle clean build --no-daemon
@@ -46,19 +46,19 @@ jobs:
           test -f "$JAR"
           git archive --format=zip --prefix=GlassConnectedTextures-1.20.1-1.0.0-source/ -o GlassConnectedTextures-1.20.1-1.0.0-source.zip HEAD
           sha256sum "$JAR" GlassConnectedTextures-1.20.1-1.0.0-source.zip
-          cat > RELEASE_NOTES.txt <<'EOF'
-Glass Connected Textures v1.0.0
-
-Minecraft 1.20.1
-Forge 47.4.10 or later in the 47.x series
-Java 17
-
-Client-side only.
-No server installation is required.
-No world data is modified.
-
-See README.txt and README_EN.txt for details.
-EOF
+          printf '%s\n' \
+            'Glass Connected Textures v1.0.0' \
+            '' \
+            'Minecraft 1.20.1' \
+            'Forge 47.4.10 or later in the 47.x series' \
+            'Java 17' \
+            '' \
+            'Client-side only.' \
+            'No server installation is required.' \
+            'No world data is modified.' \
+            '' \
+            'See README.txt and README_EN.txt for details.' \
+            > RELEASE_NOTES.txt
 
       - name: Publish v1.0.0
         env:
