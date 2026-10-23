@@ -1,0 +1,73 @@
+name: Build and Release v1.0.0
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/release-v1.0.0.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle 8.8
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.8'
+
+      - name: Build
+        run: gradle clean build --no-daemon
+
+      - name: Prepare release files
+        shell: bash
+        run: |
+          JAR="build/libs/GlassConnectedTextures-1.20.1-1.0.0.jar"
+          test -f "$JAR"
+          git archive --format=zip --prefix=GlassConnectedTextures-1.20.1-1.0.0-source/ -o GlassConnectedTextures-1.20.1-1.0.0-source.zip HEAD
+          sha256sum "$JAR" GlassConnectedTextures-1.20.1-1.0.0-source.zip
+          cat > RELEASE_NOTES.txt <<'EOF'
+Glass Connected Textures v1.0.0
+
+Minecraft 1.20.1
+Forge 47.4.10 or later in the 47.x series
+Java 17
+
+Client-side only.
+No server installation is required.
+No world data is modified.
+
+See README.txt and README_EN.txt for details.
+EOF
+
+      - name: Publish v1.0.0
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          JAR="build/libs/GlassConnectedTextures-1.20.1-1.0.0.jar"
+          SRC="GlassConnectedTextures-1.20.1-1.0.0-source.zip"
+          if gh release view v1.0.0 >/dev/null 2>&1; then
+            gh release upload v1.0.0 "$JAR" "$SRC" --clobber
+          else
+            gh release create v1.0.0 "$JAR" "$SRC" \
+              --target "$GITHUB_SHA" \
+              --title "Glass Connected Textures v1.0.0" \
+              --notes-file RELEASE_NOTES.txt
+          fi
