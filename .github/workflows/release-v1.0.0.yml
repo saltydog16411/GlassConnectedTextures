@@ -6,6 +6,10 @@ on:
       - main
     paths:
       - .github/workflows/release-v1.0.0.yml
+      - build.gradle
+      - settings.gradle
+      - gradle.properties
+      - src/**
   workflow_dispatch:
 
 permissions:
