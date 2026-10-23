@@ -1,0 +1,37 @@
+Glass Connected Textures Third Party Notices
+
+日本語
+
+このプロジェクトのソースコードと独自テクスチャ資産は独自に作成されています。
+Minecraft本体のコードやテクスチャは同梱していません。
+OptiFine、Fusion、Continuity、ConnectedTexturesMod、Embeddium、Oculusなど他のConnected Texture実装のコードや資産は同梱していません。
+
+MinecraftおよびMinecraft Java EditionはMicrosoftまたはMojangの商標です。
+本プロジェクトは非公式のコミュニティMODであり、MojangまたはMicrosoftが承認、提携、提供する製品ではありません。
+
+Minecraft Forgeは実行および開発環境として使用しますが、MOD JAR内には再配布していません。
+ソースプロジェクトはForgeGradleを通じてForgeを取得します。
+
+ビルド補助スクリプトはGradle本体を再配布しません。
+Gradle 8.8がキャッシュされていない場合は、Gradle公式配布サービスからGradle 8.8のバイナリ配布物を取得します。
+
+文書内で記載する第三者プロジェクト名は、互換性、独立性、比較の説明のためだけに使用しています。
+提携または推奨を意味するものではありません。
+
+English
+
+The source code and original texture assets in this project were created independently for this project.
+Minecraft code and Minecraft texture assets are not included.
+Code and assets from other connected texture implementations including OptiFine, Fusion, Continuity, ConnectedTexturesMod, Embeddium, and Oculus are not included.
+
+Minecraft and Minecraft Java Edition are trademarks of Microsoft or Mojang.
+This project is an unofficial community mod and is not approved by, affiliated with, or provided by Mojang or Microsoft.
+
+Minecraft Forge is used as the runtime and development environment but is not redistributed inside the mod JAR.
+The source project obtains Forge through ForgeGradle.
+
+The build helper scripts do not redistribute Gradle itself.
+If Gradle 8.8 is not already cached, the scripts obtain the Gradle 8.8 binary distribution from the official Gradle distribution service.
+
+Third party project names are mentioned only to describe compatibility, independence, or technical comparison.
+Such references do not imply affiliation or endorsement.
