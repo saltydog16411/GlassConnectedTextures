@@ -1,0 +1,136 @@
+import groovy.json.JsonOutput
+import java.awt.Color
+import java.awt.image.BufferedImage
+import javax.imageio.ImageIO
+
+plugins {
+    id 'eclipse'
+    id 'idea'
+    id 'maven-publish'
+    id 'net.minecraftforge.gradle' version '[6.0,6.2)'
+}
+
+version = mod_version
+group = mod_group_id
+
+base { archivesName = archives_base_name }
+
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(17)
+    withSourcesJar()
+}
+
+minecraft {
+    mappings channel: mapping_channel, version: mapping_version
+    copyIdeResources = true
+
+    runs {
+        configureEach {
+            workingDirectory project.file('run')
+            property 'forge.logging.console.level', 'info'
+            mods { "${mod_id}" { source sourceSets.main } }
+        }
+        client { }
+    }
+}
+
+repositories { }
+
+dependencies {
+    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+}
+
+def generatedCtmResources = layout.buildDirectory.dir('generated/ctmResources')
+
+tasks.register('generateCtmAssets') {
+    outputs.dir(generatedCtmResources)
+
+    doLast {
+        File root = generatedCtmResources.get().asFile
+        project.delete(root)
+
+        File modelDir = new File(root, 'assets/glassconnectedtextures/models/block/ctm')
+        File textureDir = new File(root, 'assets/glassconnectedtextures/textures/block/ctm')
+        modelDir.mkdirs()
+        textureDir.mkdirs()
+
+        def families = [
+            clear  : [235, 245, 250, 170],
+            stained: [255, 255, 255, 205],
+            tinted : [255, 255, 255, 230]
+        ]
+
+        families.each { String family, List<Integer> rgba ->
+            int borderArgb = new Color(rgba[0], rgba[1], rgba[2], rgba[3]).getRGB()
+
+            for (int mask = 0; mask < 15; mask++) {
+                BufferedImage image = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB)
+
+                for (int y = 0; y < 16; y++) {
+                    for (int x = 0; x < 16; x++) {
+                        boolean border =
+                                (y == 0  && (mask & 1) == 0) ||
+                                (x == 15 && (mask & 2) == 0) ||
+                                (y == 15 && (mask & 4) == 0) ||
+                                (x == 0  && (mask & 8) == 0)
+                        image.setRGB(x, y, border ? borderArgb : 0)
+                    }
+                }
+
+                File png = new File(textureDir, "${family}_${mask}.png")
+                ImageIO.write(image, 'png', png)
+
+                def model = [
+                    parent  : 'minecraft:block/cube_all',
+                    textures: [all: "glassconnectedtextures:block/ctm/${family}_${mask}"]
+                ]
+                File json = new File(modelDir, "${family}_${mask}.json")
+                json.setText(JsonOutput.prettyPrint(JsonOutput.toJson(model)) + System.lineSeparator(), 'UTF-8')
+            }
+        }
+    }
+}
+
+sourceSets.main.resources.srcDir(generatedCtmResources)
+
+tasks.named('compileJava').configure {
+    options.encoding = 'UTF-8'
+    options.release = 17
+}
+
+tasks.named('processResources', ProcessResources).configure {
+    dependsOn tasks.named('generateCtmAssets')
+
+    def replaceProperties = [
+        minecraft_version       : minecraft_version,
+        minecraft_version_range : minecraft_version_range,
+        forge_version           : forge_version,
+        forge_version_range     : forge_version_range,
+        loader_version_range    : loader_version_range,
+        mod_id                  : mod_id,
+        mod_name                : mod_name,
+        mod_license             : mod_license,
+        mod_version             : mod_version,
+        mod_authors             : mod_authors
+    ]
+    inputs.properties replaceProperties
+    filesMatching('META-INF/mods.toml') { expand replaceProperties + [project: project] }
+    from(rootProject.file('LICENSE.txt')) { into '' }
+    from(rootProject.file('THIRD_PARTY_NOTICES.txt')) { into '' }
+}
+
+tasks.named('jar', Jar).configure {
+    manifest {
+        attributes([
+            'Specification-Title'   : mod_id,
+            'Specification-Vendor'  : mod_authors,
+            'Specification-Version' : '1',
+            'Implementation-Title'  : project.name,
+            'Implementation-Version': project.jar.archiveVersion,
+            'Implementation-Vendor' : mod_authors
+        ])
+    }
+    finalizedBy 'reobfJar'
+}
+
+tasks.named('sourcesJar', Jar).configure { archiveClassifier = 'sources' }
